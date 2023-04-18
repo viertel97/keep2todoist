@@ -131,9 +131,6 @@ dmypy.json
 # config
 app/config.yaml
 app/config.my.yaml
-app/config.*.yaml
-!app/config.schema.yaml
-!app/config.example.yaml
 
 # vscode
 .vscode/launch.json
