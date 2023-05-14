@@ -14,11 +14,11 @@ def get_sections_from_file():
 
 def get_section(item):
     section_list = get_sections_from_file()
-    for section, products in section_list:
-        for product in products:
+    for section_object in section_list:
+        for product in section_object['items']:
             if product.lower() in item.lower():
                 print(product)
-                return section['id'], section['name']
+                return section_object['id'], section_object['name']
     path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "not_found.log")
     with open(path, "a") as file:
         file.write("{item}\n".format(item=item))
