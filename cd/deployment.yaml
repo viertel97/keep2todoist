@@ -39,6 +39,7 @@ spec:
                   name: akeyless-cred
           image: ghcr.io/viertel97/keep2todoist:main
           name: keep2todoist
+          pullPolicy: Always
           resources: {}
           volumeMounts:
           - name: config-volume
