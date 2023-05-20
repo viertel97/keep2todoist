@@ -8,6 +8,7 @@ metadata:
   labels:
     io.kompose.service: keep2todoist
   name: keep2todoist
+  namespace: viertel
 spec:
   replicas: 1
   selector:
@@ -39,7 +40,7 @@ spec:
                   name: akeyless-cred
           image: ghcr.io/viertel97/keep2todoist:main
           name: keep2todoist
-          pullPolicy: Always
+          imagePullPolicy: Always
           resources: {}
           volumeMounts:
           - name: config-volume
