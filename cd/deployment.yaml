@@ -38,19 +38,14 @@ spec:
                 secretKeyRef:
                   key: access_key
                   name: akeyless-cred
+            - name: categories_url
+              valueFrom:
+                  secretKeyRef:
+                    key: categories_url
+                    name: keep2todoist-categories
           image: ghcr.io/viertel97/keep2todoist:main
           name: keep2todoist
           imagePullPolicy: Always
           resources: {}
-          volumeMounts:
-          - name: config-volume
-            mountPath: /app/data
-      volumes:
-      - name: config-volume
-        configMap:
-          name: keep2todoist-categories
-          items:
-          - key: categories.json
-            path: categories.json
       restartPolicy: Always      
 status: {}

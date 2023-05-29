@@ -1,19 +1,25 @@
 import json
 import os
 
+import requests
 from quarter_lib.logging import setup_logging
+
+from helper.caching import ttl_cache
 
 logger = setup_logging(__file__)
 
+CATEGORIES_URL = os.getenv("categories_url")
 
-def get_sections_from_file():
-    with open(os.path.join(os.getcwd(), 'data', "categories.json"), encoding='utf-8') as json_file:
-        data = json.load(json_file)
+
+@ttl_cache(ttl=60 * 60 * 24)
+def get_sections_from_web():
+    response = requests.get(CATEGORIES_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False)
+    data = response.json()
     return data
 
 
 def get_section(item):
-    section_list = get_sections_from_file()
+    section_list = get_sections_from_web()
     for section_object in section_list:
         for product in section_object['items']:
             if product.lower() in item.lower():
