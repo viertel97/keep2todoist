@@ -1,4 +1,3 @@
-import json
 import os
 
 import requests
@@ -11,22 +10,20 @@ logger = setup_logging(__file__)
 CATEGORIES_URL = os.getenv("categories_url")
 
 
-@ttl_cache(ttl=60 * 60 * 24)
+@ttl_cache(ttl=60 * 60)
 def get_sections_from_web():
+    logger.info("getting sections from web")
     response = requests.get(CATEGORIES_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False)
     data = response.json()
-    return data
+    unknown_section = data.pop(len(data) - 1)
+    return data, unknown_section
 
 
 def get_section(item):
-    section_list = get_sections_from_web()
+    section_list, unknown_section = get_sections_from_web()
     for section_object in section_list:
         for product in section_object['items']:
             if product.lower() in item.lower():
                 print(product)
                 return section_object['id'], section_object['name']
-    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "not_found.log")
-    with open(path, "a") as file:
-        file.write("{item}\n".format(item=item))
-    logger.info("no section found for item: " + item)
-    return None, None
+    return unknown_section['id'], unknown_section['name']
