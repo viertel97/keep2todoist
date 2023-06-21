@@ -43,6 +43,16 @@ spec:
                   secretKeyRef:
                     key: categories_url
                     name: keep2todoist-categories
+            - name: renaming_url
+              valueFrom:
+                secretKeyRef:
+                  key: renaming_url
+                  name: keep2todoist-renaming
+            - name: todoist_project_id_this_week
+              valueFrom:
+                secretKeyRef:
+                  key: project_id
+                  name: todoist-project-id-this-week
           image: ghcr.io/viertel97/keep2todoist:main
           name: keep2todoist
           imagePullPolicy: Always

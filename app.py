@@ -6,13 +6,15 @@ from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
 from todoist_api_python.api import TodoistAPI
 
-from helper.todoist_helper import get_section
+from helper.todoist_helper import get_section, rename_item
 
 logger = setup_logging(__file__)
 
 GOOGLE_E_MAIL, GOOGLE_APP_PASSWORD, GOOGLE_DEVICE_ID, TODOIST_TOKEN = get_secrets(
     ["google/email", "google/app_password", "google/device_id", "todoist/token"]
 )
+
+API = TodoistAPI(TODOIST_TOKEN)
 
 
 def get_todoist_project_id(api: TodoistAPI, name):
@@ -31,23 +33,24 @@ def transfer_list(keep_list_name: str, todoist_project: str, check_categories: b
             return
         logger.info(f"found {len(keep_list.items)} items")
         for item in keep_list.items:
+            item_text = rename_item(item.text)
             if check_categories:
-                section_id, section_name = get_section(item.text)
+                section_id, section_name = get_section(item_text, API)
             if todoist_project:
-                todoist_project_id = get_todoist_project_id(todoist_api, todoist_project)
-                todoist_api.add_task(
-                    content=item.text,
+                todoist_project_id = get_todoist_project_id(API, todoist_project)
+                API.add_task(
+                    content=item_text,
                     project_id=todoist_project_id,
                     section_id=None if not check_categories else section_id,
                     due_lang="en",
                 )
             else:
-                todoist_api.add_task(content=item.text, due_lang="en")
+                API.add_task(content=item_text, due_lang="en")
             item.delete()
             if check_categories and section_id:
-                logger.info(f"added '{item.text}' to '{todoist_project}' and section '{section_name}'")
+                logger.info(f"added '{item_text}' to '{todoist_project}' and section '{section_name}'")
             else:
-                logger.info(f"added '{item.text}' to '{todoist_project}'")
+                logger.info(f"added '{item_text}' to '{todoist_project}'")
     keep.sync()
     logger.info("Added {} items to '{}'".format(len(keep_list.items), todoist_project))
 
@@ -60,8 +63,6 @@ def update():
 if __name__ == "__main__":
     keep = gkeepapi.Keep()
     keep.login(GOOGLE_E_MAIL, GOOGLE_APP_PASSWORD, device_id=GOOGLE_DEVICE_ID)
-
-    todoist_api = TodoistAPI(TODOIST_TOKEN)
 
     schedule.every(10).minutes.do(update)
 
