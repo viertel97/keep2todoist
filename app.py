@@ -60,7 +60,7 @@ def transfer_list(keep_list_name: str, todoist_project: str, check_categories: b
 
 
 def get_items_without_section(project_id="2247224944"):
-    items = todoist_api.get_tasks(project_id=project_id)
+    items = API.get_tasks(project_id=project_id)
     return [item for item in items if not item.section_id]
 
 
@@ -69,7 +69,7 @@ def transfer_todoist_non_section_list():
     items_without_section = get_items_without_section()
     logger.info(f"found {len(items_without_section)} items")
     for item in items_without_section:
-        section_id, section_name = get_section(item.content)
+        section_id, section_name = get_section(item.content, API)
         move_item_to_section(item.id, section_id)
         logger.info(f"moved '{item.content}' to section '{section_name}'")
 
@@ -104,8 +104,6 @@ def update():
 if __name__ == "__main__":
     keep = gkeepapi.Keep()
     keep.login(GOOGLE_E_MAIL, GOOGLE_APP_PASSWORD, device_id=GOOGLE_DEVICE_ID)
-
-    todoist_api = TodoistAPI(TODOIST_TOKEN)
 
     schedule.every(10).minutes.do(update)
 
