@@ -25,11 +25,13 @@ API = TodoistAPI(TODOIST_TOKEN)
 def get_todoist_project_id(api: TodoistAPI, name):
     for project in api.get_projects():
         if project.name == name:
-            return project.id
+            tasks = api.get_tasks(project_id=project.id)
+            return project.id, tasks
     return None
 
 
 def transfer_list(keep_list_name: str, todoist_project: str, check_categories: bool = False):
+    todoist_project_id, project_tasks = get_todoist_project_id(API, todoist_project)
     logger.info(f"transferring {keep_list_name} to {todoist_project}")
     keep.sync()
     for keep_list in keep.find(func=lambda x: x.title == keep_list_name):
@@ -39,22 +41,26 @@ def transfer_list(keep_list_name: str, todoist_project: str, check_categories: b
         logger.info(f"found {len(keep_list.items)} items")
         for item in keep_list.items:
             item_text = rename_item(item.text)
-            if check_categories:
-                section_id, section_name = get_section(item_text, API)
-                todoist_project_id = get_todoist_project_id(API, todoist_project)
-                API.add_task(
-                    content=item_text,
-                    project_id=todoist_project_id,
-                    section_id=None if not check_categories else section_id,
-                    due_lang="en",
-                )
+            if item_text in [task.content for task in project_tasks]:
+                logger.info(f"item '{item_text}' already exists in '{todoist_project}' and will be deleted")
+                item.delete()
+                continue
             else:
-                API.add_task(content=item_text, due_lang="en")
-            item.delete()
+                if check_categories:
+                    section_id, section_name = get_section(item_text, API)
+                    API.add_task(
+                        content=item_text,
+                        project_id=todoist_project_id,
+                        section_id=None if not check_categories else section_id,
+                        due_lang="en",
+                    )
+                else:
+                    API.add_task(content=item_text, due_lang="en")
             if check_categories and section_id:
                 logger.info(f"added '{item_text}' to '{todoist_project}' and section '{section_name}'")
             else:
                 logger.info(f"added '{item_text}' to '{todoist_project}'")
+            item.delete()
     keep.sync()
     logger.info("Added {} items to '{}'".format(len(keep_list.items), todoist_project))
 
