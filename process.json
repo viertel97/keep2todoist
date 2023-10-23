@@ -1,0 +1,14 @@
+{
+    "apps": [
+        {
+            "name": "keep2todoist",
+            "script": "app.py",
+            "cwd": "/home/pi/code/keep2todoist",
+            "interpreter": "/home/pi/code/keep2todoist/venv/bin/python",
+            "instances": 1,
+            "exec_mode": "fork",
+            "log_date_format": "YYYY-MM-DD HH:mm Z",
+            "combine_logs": true
+        }
+      ]
+}
