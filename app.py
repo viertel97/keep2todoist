@@ -31,17 +31,19 @@ def get_todoist_project_id(api: TodoistAPI, name):
 
 
 def transfer_list(keep_list_name: str, todoist_project: str, check_categories: bool = False):
-    todoist_project_id, project_tasks = get_todoist_project_id(API, todoist_project)
     logger.info(f"transferring {keep_list_name} to {todoist_project}")
     keep.sync()
     for keep_list in keep.find(func=lambda x: x.title == keep_list_name):
         if len(keep_list.items) == 0:
             logger.info("Nothing to transfer")
             return
-        logger.info(f"found {len(keep_list.items)} items")
+        list_length = len(keep_list.items)
+        logger.info(f"found {list_length} items")
+        todoist_project_id, project_tasks = get_todoist_project_id(API, todoist_project)
         for item in keep_list.items:
             item_text = rename_item(item.text)
-            if item_text in [task.content for task in project_tasks]:
+            project_task_names = [task.content for task in project_tasks]
+            if item_text in project_task_names:
                 logger.info(f"item '{item_text}' already exists in '{todoist_project}' and will be deleted")
                 item.delete()
                 continue
@@ -62,7 +64,7 @@ def transfer_list(keep_list_name: str, todoist_project: str, check_categories: b
                 logger.info(f"added '{item_text}' to '{todoist_project}'")
             item.delete()
     keep.sync()
-    logger.info("Added {} items to '{}'".format(len(keep_list.items), todoist_project))
+    logger.info("Added {} items to '{}'".format(list_length, todoist_project))
 
 
 def get_items_without_section(project_id="2247224944"):
@@ -102,9 +104,12 @@ def move_item_to_section(task_id, section_id):
 
 
 def update():
-    transfer_list("Einkaufsliste", "Einkaufsliste", check_categories=True)
-    transfer_list("ToDo-Liste", "Inbox")
-    transfer_todoist_non_section_list()
+    try:
+        transfer_list("Einkaufsliste", "Einkaufsliste", check_categories=True)
+        transfer_list("ToDo-Liste", "Inbox")
+        transfer_todoist_non_section_list()
+    except Exception as e:
+        logger.error(e)
 
 
 if __name__ == "__main__":

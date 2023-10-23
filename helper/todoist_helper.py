@@ -23,7 +23,7 @@ def get_sections_from_web():
 
 @ttl_cache(ttl=60 * 60)
 def get_renaming_from_web():
-    logger.info("getting sections from web")
+    logger.info("getting renaming from web")
     response = requests.get(RENAMING_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False)
     return response.json()
 
@@ -32,7 +32,7 @@ def rename_item(text):
     renaming_mapping = get_renaming_from_web()
     for key, value in renaming_mapping.items():
         for real_value in value:
-            if real_value.lower() in text:
+            if real_value.lower() in text.lower():
                 return key
     return text
 
