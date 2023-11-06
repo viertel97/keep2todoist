@@ -18,6 +18,7 @@ def get_sections_from_web():
     response = requests.get(CATEGORIES_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False)
     data = response.json()
     unknown_section = data.pop(len(data) - 1)
+    data.reverse()
     return data, unknown_section
 
 
