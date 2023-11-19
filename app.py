@@ -106,7 +106,7 @@ def move_item_to_section(task_id, section_id):
 def update():
     try:
         transfer_list("Einkaufsliste", "Einkaufsliste", check_categories=True)
-        transfer_list("ToDo-Liste", "Inbox")
+        transfer_list("To-Do", "Inbox")
         transfer_todoist_non_section_list()
     except Exception as e:
         logger.error(e)
