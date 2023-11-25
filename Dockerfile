@@ -1,8 +1,14 @@
-FROM python:3.9.5-alpine
-RUN pip install --upgrade pip
+FROM python:3.9-slim-buster
 
-WORKDIR /app
+COPY . .
+
 COPY requirements.txt .
 RUN pip install -r requirements.txt
-COPY . .
-CMD ["python3", "./app.py"]
+
+ENV IS_CONTAINER=True
+
+CMD ["python", "app.py"]
+
+
+
+
