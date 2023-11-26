@@ -10,7 +10,7 @@ from todoist_api_python.api import TodoistAPI
 from todoist_api_python.endpoints import get_sync_url
 from todoist_api_python.headers import create_headers
 
-from helper.todoist_helper import get_section
+from helper.todoist_helper import get_section, rename_item
 
 logger = setup_logging(__file__)
 
@@ -19,11 +19,14 @@ GOOGLE_E_MAIL, GOOGLE_APP_PASSWORD, GOOGLE_DEVICE_ID, TODOIST_TOKEN = get_secret
 )
 HEADERS = create_headers(TODOIST_TOKEN)
 
+API = TodoistAPI(TODOIST_TOKEN)
+
 
 def get_todoist_project_id(api: TodoistAPI, name):
     for project in api.get_projects():
         if project.name == name:
-            return project.id
+            tasks = api.get_tasks(project_id=project.id)
+            return project.id, tasks
     return None
 
 
@@ -34,32 +37,38 @@ def transfer_list(keep_list_name: str, todoist_project: str, check_categories: b
         if len(keep_list.items) == 0:
             logger.info("Nothing to transfer")
             return
-        logger.info(f"found {len(keep_list.items)} items")
+        list_length = len(keep_list.items)
+        logger.info(f"found {list_length} items")
+        todoist_project_id, project_tasks = get_todoist_project_id(API, todoist_project)
         for item in keep_list.items:
-            if check_categories:
-                section_id, section_name = get_section(item.text)
-                todoist_project_id = get_todoist_project_id(todoist_api, todoist_project)
-                todoist_api.add_task(
-                    content=item.text,
-                    project_id=todoist_project_id,
-                    section_id=section_id,
-                    due_lang="en",
-                )
-                logger.info(f"added '{item.text}' to '{todoist_project}' and section '{section_name}'")
+            item_text = rename_item(item.text)
+            project_task_names = [task.content for task in project_tasks]
+            if item_text in project_task_names:
+                logger.info(f"item '{item_text}' already exists in '{todoist_project}' and will be deleted")
+                item.delete()
+                continue
             else:
-                todoist_api.add_task(
-                    content=item.text,
-                    due_lang="en",
-                )
-                logger.info(f"added '{item.text}' to '{todoist_project}'")
-
+                if check_categories:
+                    section_id, section_name = get_section(item_text, API)
+                    API.add_task(
+                        content=item_text,
+                        project_id=todoist_project_id,
+                        section_id=None if not check_categories else section_id,
+                        due_lang="en",
+                    )
+                else:
+                    API.add_task(content=item_text, due_lang="en")
+            if check_categories and section_id:
+                logger.info(f"added '{item_text}' to '{todoist_project}' and section '{section_name}'")
+            else:
+                logger.info(f"added '{item_text}' to '{todoist_project}'")
             item.delete()
     keep.sync()
-    logger.info("Added {} items to '{}'".format(len(keep_list.items), todoist_project))
+    logger.info("Added {} items to '{}'".format(list_length, todoist_project))
 
 
 def get_items_without_section(project_id="2247224944"):
-    items = todoist_api.get_tasks(project_id=project_id)
+    items = API.get_tasks(project_id=project_id)
     return [item for item in items if not item.section_id]
 
 
@@ -68,7 +77,7 @@ def transfer_todoist_non_section_list():
     items_without_section = get_items_without_section()
     logger.info(f"found {len(items_without_section)} items")
     for item in items_without_section:
-        section_id, section_name = get_section(item.content)
+        section_id, section_name = get_section(item.content, API)
         move_item_to_section(item.id, section_id)
         logger.info(f"moved '{item.content}' to section '{section_name}'")
 
@@ -95,16 +104,17 @@ def move_item_to_section(task_id, section_id):
 
 
 def update():
-    transfer_list("Einkaufsliste", "Einkaufsliste", check_categories=True)
-    transfer_list("ToDo-Liste", "Inbox")
-    transfer_todoist_non_section_list()
+    try:
+        transfer_list("Einkaufsliste", "Einkaufsliste", check_categories=True)
+        transfer_list("To-Do", "Inbox")
+        transfer_todoist_non_section_list()
+    except Exception as e:
+        logger.error(e)
 
 
 if __name__ == "__main__":
     keep = gkeepapi.Keep()
     keep.login(GOOGLE_E_MAIL, GOOGLE_APP_PASSWORD, device_id=GOOGLE_DEVICE_ID)
-
-    todoist_api = TodoistAPI(TODOIST_TOKEN)
 
     schedule.every(10).minutes.do(update)
 
