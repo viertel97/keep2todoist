@@ -14,8 +14,8 @@ from helper.todoist_helper import get_section, rename_item
 
 logger = setup_logging(__file__)
 
-GOOGLE_E_MAIL, GOOGLE_APP_PASSWORD, GOOGLE_DEVICE_ID, TODOIST_TOKEN = get_secrets(
-    ["google/email", "google/app_password", "google/device_id", "todoist/token"]
+GOOGLE_E_MAIL, MASTER_TOKEN, TODOIST_TOKEN = get_secrets(
+    ["google/email", "google/master_token", "todoist/token"]
 )
 HEADERS = create_headers(TODOIST_TOKEN)
 
@@ -114,8 +114,11 @@ def update():
 
 if __name__ == "__main__":
     keep = gkeepapi.Keep()
-    keep.login(GOOGLE_E_MAIL, GOOGLE_APP_PASSWORD, device_id=GOOGLE_DEVICE_ID)
-
+    try:
+        keep.resume(GOOGLE_E_MAIL, MASTER_TOKEN)
+    except Exception as e:
+        logger.error(e)
+        time.sleep(60)
     schedule.every(10).minutes.do(update)
 
     logger.info("start scheduler")

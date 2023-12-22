@@ -1,17 +1,20 @@
-FROM python:3.9.2-slim-buster
-
-RUN apt-get update && apt-get upgrade -y && apt-get install -y procps
 
 
+
+# Create a venv using the larger base image (which contains gcc).
+FROM python:3.10-bullseye AS builder
+RUN python3 -m venv /venv
+COPY requirements.txt /requirements.txt
+RUN /venv/bin/pip3 install --no-cache-dir -r /requirements.txt
+
+# Copy the venv to a fresh "slim" image.
+FROM python:3.10-slim-bullseye
+COPY --from=builder /venv /venv
+WORKDIR /app
 COPY . .
-
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
 ENV IS_CONTAINER=True
 
-CMD ["python", "app.py"]
-
+CMD ["/venv/bin/python3", "app.py"]
 
 
 
