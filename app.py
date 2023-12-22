@@ -114,11 +114,7 @@ def update():
 
 if __name__ == "__main__":
     keep = gkeepapi.Keep()
-    try:
-        keep.resume(GOOGLE_E_MAIL, MASTER_TOKEN)
-    except Exception as e:
-        logger.error(e)
-        time.sleep(60)
+    keep.resume(GOOGLE_E_MAIL, MASTER_TOKEN)
     schedule.every(10).minutes.do(update)
 
     logger.info("start scheduler")
