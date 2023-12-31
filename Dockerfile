@@ -9,6 +9,8 @@ RUN /venv/bin/pip3 install --no-cache-dir -r /requirements.txt
 
 # Copy the venv to a fresh "slim" image.
 FROM python:3.10-slim-bullseye
+RUN apt-get update && apt-get upgrade -y && apt-get install -y procps
+
 COPY --from=builder /venv /venv
 WORKDIR /app
 COPY . .
