@@ -21,29 +21,35 @@ HEADERS = create_headers(TODOIST_TOKEN)
 
 API = TodoistAPI(TODOIST_TOKEN)
 
+TODOIST_PROJECTS = API.get_projects()
+TODOIST_PROJECT_NAMES = ["Einkaufsliste", "Inbox"]
+FILTERED_TODOIST_PROJECTS = [project for project in TODOIST_PROJECTS if project.name in TODOIST_PROJECT_NAMES]
 
-def get_todoist_project_id(api: TodoistAPI, name):
-    for project in api.get_projects():
+
+def get_todoist_project_id(name):
+    for project in FILTERED_TODOIST_PROJECTS:
         if project.name == name:
-            tasks = api.get_tasks(project_id=project.id)
+            tasks = API.get_tasks(project_id=project.id)
             return project.id, tasks
     return None
 
 
-def transfer_list(keep_list_name: str, todoist_project: str, check_categories: bool = False):
-    logger.info(f"transferring {keep_list_name} to {todoist_project}")
+def transfer_list(keep_list_names: [], todoist_project: str, check_categories: bool = False):
+    logger.info(f"transferring {keep_list_names} to {todoist_project}")
+    total_items_transferred = 0
+    deleted_duplicates = 0
     keep.sync()
-    for keep_list in keep.find(func=lambda x: x.title == keep_list_name):
+    for keep_list in keep.find(func=lambda x: x.title in keep_list_names):
+        logger.info(f"found list '{keep_list.title}' with {len(keep_list.items)} items and ID {keep_list.id}")
         if len(keep_list.items) == 0:
-            logger.info("Nothing to transfer")
-            return
-        list_length = len(keep_list.items)
-        logger.info(f"found {list_length} items")
-        todoist_project_id, project_tasks = get_todoist_project_id(API, todoist_project)
+            logger.info(f"Nothing to transfer for '{keep_list.title}' (ID {keep_list.id})")
+            continue
+        todoist_project_id, project_tasks = get_todoist_project_id(todoist_project)
         for item in keep_list.items:
             item_text = rename_item(item.text)
             project_task_names = [task.content for task in project_tasks]
             if item_text in project_task_names:
+                deleted_duplicates += 1
                 logger.info(f"item '{item_text}' already exists in '{todoist_project}' and will be deleted")
                 item.delete()
                 continue
@@ -58,13 +64,15 @@ def transfer_list(keep_list_name: str, todoist_project: str, check_categories: b
                     )
                 else:
                     API.add_task(content=item_text, due_lang="en")
+                total_items_transferred += 1
             if check_categories and section_id:
                 logger.info(f"added '{item_text}' to '{todoist_project}' and section '{section_name}'")
             else:
                 logger.info(f"added '{item_text}' to '{todoist_project}'")
             item.delete()
     keep.sync()
-    logger.info("Added {} items to '{}'".format(list_length, todoist_project))
+    logger.info(
+        f"Added {total_items_transferred} items to '{todoist_project}' from {keep_list_names} - deleted {deleted_duplicates} duplicates")
 
 
 def get_items_without_section(project_id="2247224944"):
@@ -105,8 +113,8 @@ def move_item_to_section(task_id, section_id):
 
 def update():
     try:
-        transfer_list("Einkaufsliste", "Einkaufsliste", check_categories=True)
-        transfer_list("To-Do", "Inbox")
+        transfer_list(["Einkaufsliste", "Einkaufszettel"], "Einkaufsliste", check_categories=True)
+        transfer_list(["To-Do", "ToDo-Liste", "To-Do-Liste"], "Inbox")
         transfer_todoist_non_section_list()
     except Exception as e:
         logger.error(e)
