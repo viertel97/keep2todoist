@@ -7,9 +7,10 @@ from helper.caching import ttl_cache
 
 logger = setup_logging(__file__)
 
-CATEGORIES_URL = os.getenv("categories_url")
-RENAMING_URL = os.getenv("renaming_url")
+BASE_URL = os.getenv("base_url")
 THIS_WEEK_PROJECT_ID = os.getenv("todoist_project_id_this_week")
+CATEGORIES_URL = BASE_URL + "/categories.json"
+RENAMING_URL = BASE_URL + "/renaming.json"
 
 
 @ttl_cache(ttl=60 * 60)

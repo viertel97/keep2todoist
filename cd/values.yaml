@@ -9,6 +9,8 @@ image:
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
+  env:
+    base_url: "" # set by pipeline
 
 imagePullSecrets:
   - name: ghcr-secret
