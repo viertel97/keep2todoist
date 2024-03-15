@@ -17,7 +17,7 @@ RENAMING_URL = BASE_URL + "/renaming.json"
 def get_sections_from_web():
     logger.info("getting sections from web")
     response = requests.get(CATEGORIES_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False)
-    data = response.json()
+    data = response.json()['categories']
     unknown_section = data.pop(len(data) - 1)
     data.reverse()
     return data, unknown_section
@@ -27,7 +27,7 @@ def get_sections_from_web():
 def get_renaming_from_web():
     logger.info("getting renaming from web")
     response = requests.get(RENAMING_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False)
-    return response.json()
+    return response.json()['renaming']
 
 
 def rename_item(text):
