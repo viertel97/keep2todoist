@@ -122,6 +122,8 @@ def update():
 
 if __name__ == "__main__":
     keep = gkeepapi.Keep()
+    logger.info(GOOGLE_E_MAIL)
+    logger.info(MASTER_TOKEN)
     keep.resume(GOOGLE_E_MAIL, MASTER_TOKEN)
     schedule.every(10).minutes.do(update)
 
