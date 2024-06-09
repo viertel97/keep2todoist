@@ -41,10 +41,15 @@ def rename_item(text):
 
 def get_section(item, todoist_api):
     section_list, unknown_section = get_sections_from_web()
-    for section_object in section_list:
+    for section_object in section_list: # direct matching
+        for product in section_object['items']:
+            if product.lower() == item.lower():
+                logger.info("direct matching: " + product)
+                return section_object['id'], section_object['name']
+    for section_object in section_list: # partly matching
         for product in section_object['items']:
             if product.lower() in item.lower():
-                print(product)
+                logger.info("partly matching: " + product)
                 return section_object['id'], section_object['name']
     todoist_api.add_task(content="item not found: " + item, project_id="2244725398", description=CATEGORIES_URL)
     return unknown_section['id'], unknown_section['name']
