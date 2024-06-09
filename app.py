@@ -1,5 +1,6 @@
 import time
 import uuid
+import sys
 
 import gkeepapi
 import requests
@@ -14,8 +15,8 @@ from helper.todoist_helper import get_section, rename_item
 
 logger = setup_logging(__file__)
 
-GOOGLE_E_MAIL, MASTER_TOKEN, TODOIST_TOKEN = get_secrets(
-    ["google/email", "google/master_token", "todoist/token"]
+GOOGLE_E_MAIL, GOOGLE_PASSWORD, MASTER_TOKEN, DEVICE_ID, TODOIST_TOKEN = get_secrets(
+    ["google/email", "google/password", "google/master_token","google/device_id", "todoist/token"]
 )
 HEADERS = create_headers(TODOIST_TOKEN)
 
@@ -124,7 +125,36 @@ if __name__ == "__main__":
     keep = gkeepapi.Keep()
     logger.info(GOOGLE_E_MAIL)
     logger.info(MASTER_TOKEN)
-    keep.resume(GOOGLE_E_MAIL, MASTER_TOKEN)
+    logger.info(GOOGLE_PASSWORD)
+    logged_in = False
+
+    try:
+        with open('gkeepapi_token', 'r') as cached_token:
+            token = cached_token.read()
+    except FileNotFoundError:
+        token = None
+
+    if token:
+        try:
+            keep.authenticate(GOOGLE_E_MAIL, MASTER_TOKEN, sync=False, device_id=DEVICE_ID)
+            logged_in = True
+            logger.info("Successfully authenticated with token 👍")
+        except gkeepapi.exception.LoginException:
+            logger.warning("invalid token ⚠️")
+
+    if not logged_in:
+        try:
+            logger.info('requesting new token')
+            keep.login(GOOGLE_E_MAIL, GOOGLE_PASSWORD, sync=False, device_id=DEVICE_ID)
+            logged_in = True
+            token = keep.getMasterToken()
+            with open('gkeepapi_token', 'w') as cached_token:
+                cached_token.write(token)
+            logger.info("authenticated successfully 👍")
+        except gkeepapi.exception.LoginException as ex:
+            logger.info(f'failed to authenticate ❌ {ex}')
+            sys.exit(1)
+
     schedule.every(10).minutes.do(update)
 
     logger.info("start scheduler")
