@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
     if MASTER_TOKEN:
         try:
-            keep.authenticate(GOOGLE_E_MAIL, master_token=token, sync=False, device_id=DEVICE_ID)
+            keep.resume(GOOGLE_E_MAIL, master_token=MASTER_TOKEN, sync=False, device_id=DEVICE_ID)
             logged_in = True
             logger.info("Successfully authenticated with token 👍")
         except gkeepapi.exception.LoginException:
