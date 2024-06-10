@@ -123,37 +123,7 @@ def update():
 
 if __name__ == "__main__":
     keep = gkeepapi.Keep()
-    logger.info(GOOGLE_E_MAIL)
-    logger.info(MASTER_TOKEN)
-    logger.info(GOOGLE_PASSWORD)
-    logged_in = False
-
-    try:
-        with open('gkeepapi_token', 'r') as cached_token:
-            token = cached_token.read()
-    except FileNotFoundError:
-        token = None
-
-    if MASTER_TOKEN:
-        try:
-            keep.resume(GOOGLE_E_MAIL, master_token=MASTER_TOKEN, sync=False, device_id=DEVICE_ID)
-            logged_in = True
-            logger.info("Successfully authenticated with token 👍")
-        except gkeepapi.exception.LoginException:
-            logger.warning("invalid token ⚠️")
-
-    if not logged_in:
-        try:
-            logger.info('requesting new token')
-            keep.login(GOOGLE_E_MAIL, password=GOOGLE_PASSWORD, sync=False, device_id=DEVICE_ID)
-            logged_in = True
-            token = keep.getMasterToken()
-            with open('gkeepapi_token', 'w') as cached_token:
-                cached_token.write(token)
-            logger.info("authenticated successfully 👍")
-        except gkeepapi.exception.LoginException as ex:
-            logger.info(f'failed to authenticate ❌ {ex}')
-            sys.exit(1)
+    keep.authenticate(GOOGLE_E_MAIL, master_token=MASTER_TOKEN, sync=False, device_id=DEVICE_ID)
 
     schedule.every(10).minutes.do(update)
 
