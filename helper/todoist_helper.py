@@ -16,7 +16,7 @@ RENAMING_URL = BASE_URL + "/renaming.json"
 @ttl_cache(ttl=60 * 60)
 def get_sections_from_web():
     logger.info("getting sections from web")
-    response = requests.get(CATEGORIES_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False)
+    response = requests.get(CATEGORIES_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False, timeout=10)
     data = response.json()['categories']
     unknown_section = data.pop(len(data) - 1)
     data.reverse()
@@ -26,7 +26,7 @@ def get_sections_from_web():
 @ttl_cache(ttl=60 * 60)
 def get_renaming_from_web():
     logger.info("getting renaming from web")
-    response = requests.get(RENAMING_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False)
+    response = requests.get(RENAMING_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False, timeout=10)
     return response.json()['renaming']
 
 

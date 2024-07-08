@@ -47,7 +47,11 @@ def transfer_list(keep_list_names: [], todoist_project: str, check_categories: b
             continue
         todoist_project_id, project_tasks = get_todoist_project_id(todoist_project)
         for item in keep_list.items:
-            item_text = rename_item(item.text)
+            try:
+                item_text = rename_item(item.text)
+            except Exception as e:
+                logger.error(f"error renaming item '{item.text}': {e}")
+                item_text = item.text
             project_task_names = [task.content for task in project_tasks]
             if item_text in project_task_names:
                 deleted_duplicates += 1
@@ -56,7 +60,12 @@ def transfer_list(keep_list_names: [], todoist_project: str, check_categories: b
                 continue
             else:
                 if check_categories:
-                    section_id, section_name = get_section(item_text, API)
+                    try:
+                        section_id, section_name = get_section(item_text, API)
+                    except Exception as e:
+                        logger.error(f"error getting section for item '{item_text}': {e}")
+                        section_id = 124643194 # Unbekannt
+                        section_name = None
                     API.add_task(
                         content=item_text,
                         project_id=todoist_project_id,
@@ -86,7 +95,11 @@ def transfer_todoist_non_section_list():
     items_without_section = get_items_without_section()
     logger.info(f"found {len(items_without_section)} items")
     for item in items_without_section:
-        section_id, section_name = get_section(item.content, API)
+        try:
+            section_id, section_name = get_section(item.content, API)
+        except Exception as e:
+            logger.error(f"error getting section for item '{item.content}': {e}")
+            continue
         move_item_to_section(item.id, section_id)
         logger.info(f"moved '{item.content}' to section '{section_name}'")
 
