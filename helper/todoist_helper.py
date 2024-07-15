@@ -2,32 +2,49 @@ import os
 
 import requests
 from quarter_lib.logging import setup_logging
-
+from quarter_lib.akeyless import get_secrets
 from helper.caching import ttl_cache
 
 logger = setup_logging(__file__)
 
+MASTER_KEY, CATEGORIES_BIN, RENAIMING_BIN = get_secrets(
+    ["jsonbin/masterkey", "jsonbin/categories-bin", "jsonbin/renaiming-bin"])
+
+
 BASE_URL = os.getenv("base_url")
 THIS_WEEK_PROJECT_ID = os.getenv("todoist_project_id_this_week")
-CATEGORIES_URL = BASE_URL + "/categories.json"
-RENAMING_URL = BASE_URL + "/renaming.json"
 
+CATEGORIES_URL = f"{BASE_URL}/b/{CATEGORIES_BIN}/latest"
+RENAMING_URL = f"{BASE_URL}/b/{RENAIMING_BIN}/latest"
+
+section_data = []
+renaming_data = []
 
 @ttl_cache(ttl=60 * 60)
 def get_sections_from_web():
+    global section_data
     logger.info("getting sections from web")
-    response = requests.get(CATEGORIES_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False, timeout=10)
-    data = response.json()['categories']
-    unknown_section = data.pop(len(data) - 1)
-    data.reverse()
-    return data, unknown_section
+    try:
+        response = requests.get(CATEGORIES_URL, headers={'User-Agent': 'Mozilla/5.0', 'X-Master-Key': MASTER_KEY}, verify=False, timeout=10)
+        section_data = response.json()
+    except Exception as e:
+        logger.error(e)
+    temp_data = section_data.copy()
+    unknown_section = temp_data.pop(len(temp_data) - 1)
+    temp_data.reverse()
+    return temp_data, unknown_section
 
 
 @ttl_cache(ttl=60 * 60)
 def get_renaming_from_web():
+    global renaming_data
     logger.info("getting renaming from web")
-    response = requests.get(RENAMING_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False, timeout=10)
-    return response.json()['renaming']
+    try:
+        response = requests.get(RENAMING_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False, timeout=10)
+        renaming_data = response.json()
+    except Exception as e:
+        logger.error(e)
+    return renaming_data
 
 
 def rename_item(text):
