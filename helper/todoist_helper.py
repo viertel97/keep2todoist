@@ -11,7 +11,7 @@ MASTER_KEY, CATEGORIES_BIN, RENAIMING_BIN = get_secrets(
     ["jsonbin/masterkey", "jsonbin/categories-bin", "jsonbin/renaiming-bin"])
 
 
-BASE_URL = os.getenv("base_url")
+BASE_URL = "https://api.jsonbin.io/v3"
 THIS_WEEK_PROJECT_ID = os.getenv("todoist_project_id_this_week")
 
 CATEGORIES_URL = f"{BASE_URL}/b/{CATEGORIES_BIN}/latest"
@@ -26,7 +26,7 @@ def get_sections_from_web():
     logger.info("getting sections from web")
     try:
         response = requests.get(CATEGORIES_URL, headers={'User-Agent': 'Mozilla/5.0', 'X-Master-Key': MASTER_KEY}, verify=False, timeout=10)
-        section_data = response.json()
+        section_data = response.json()["record"]
     except Exception as e:
         logger.error(e)
     temp_data = section_data.copy()
@@ -40,8 +40,8 @@ def get_renaming_from_web():
     global renaming_data
     logger.info("getting renaming from web")
     try:
-        response = requests.get(RENAMING_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False, timeout=10)
-        renaming_data = response.json()
+        response = requests.get(RENAMING_URL, headers={'User-Agent': 'Mozilla/5.0', 'X-Master-Key': MASTER_KEY}, verify=False, timeout=10)
+        renaming_data = response.json()["record"]
     except Exception as e:
         logger.error(e)
     return renaming_data
@@ -62,11 +62,11 @@ def get_section(item, todoist_api):
         for product in section_object['items']:
             if product.lower() == item.lower():
                 logger.info("direct matching: " + product)
-                return section_object['id'], section_object['name']
+                return section_object['section_id'], section_object['name']
     for section_object in section_list: # partly matching
         for product in section_object['items']:
             if product.lower() in item.lower():
                 logger.info("partly matching: " + product)
-                return section_object['id'], section_object['name']
+                return section_object['section_id'], section_object['name']
     todoist_api.add_task(content="item not found: " + item, project_id="2244725398", description=CATEGORIES_URL)
-    return unknown_section['id'], unknown_section['name']
+    return unknown_section['section_id'], unknown_section['name']

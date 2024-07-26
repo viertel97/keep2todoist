@@ -80,6 +80,7 @@ def transfer_list(keep_list_names: [], todoist_project: str, check_categories: b
             else:
                 logger.info(f"added '{item_text}' to '{todoist_project}'")
             item.delete()
+        keep_list.delete()
     keep.sync()
     logger.info(
         f"Added {total_items_transferred} items to '{todoist_project}' from {keep_list_names} - deleted {deleted_duplicates} duplicates")
@@ -100,9 +101,11 @@ def transfer_todoist_non_section_list():
         except Exception as e:
             logger.error(f"error getting section for item '{item.content}': {e}")
             continue
-        move_item_to_section(item.id, section_id)
-        logger.info(f"moved '{item.content}' to section '{section_name}'")
-
+        response = move_item_to_section(item.id, section_id)
+        if response["sync_status"] == "ok":
+            logger.info(f"moved '{item.content}' to section '{section_name}'")
+        else:
+            logger.error(f"error moving '{item.content}' to section '{section_name}': {response}")
     logger.info("Moved {} items to correct categories".format(len(items_without_section)))
 
 
