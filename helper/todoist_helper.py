@@ -30,8 +30,8 @@ def get_sections_from_web():
     except Exception as e:
         logger.error(e)
     temp_data = section_data.copy()
-    unknown_section = temp_data.pop(len(temp_data) - 1)
     temp_data.reverse()
+    unknown_section = temp_data.pop(len(temp_data) - 1)
     return temp_data, unknown_section
 
 
