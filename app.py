@@ -102,7 +102,7 @@ def transfer_todoist_non_section_list():
             logger.error(f"error getting section for item '{item.content}': {e}")
             continue
         response = move_item_to_section(item.id, section_id)
-        if response["sync_status"] == "ok":
+        if list(response["sync_status"].values())[0] == "ok":
             logger.info(f"moved '{item.content}' to section '{section_name}'")
         else:
             logger.error(f"error moving '{item.content}' to section '{section_name}': {response}")

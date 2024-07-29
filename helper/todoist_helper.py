@@ -25,7 +25,7 @@ def get_sections_from_web():
     global section_data
     logger.info("getting sections from web")
     try:
-        response = requests.get(CATEGORIES_URL, headers={'User-Agent': 'Mozilla/5.0', 'X-Master-Key': MASTER_KEY}, verify=False, timeout=10)
+        response = requests.get(CATEGORIES_URL, headers={'User-Agent': 'Mozilla/5.0', 'X-Master-Key': MASTER_KEY}, timeout=10)
         section_data = response.json()["record"]
     except Exception as e:
         logger.error(e)
@@ -40,7 +40,7 @@ def get_renaming_from_web():
     global renaming_data
     logger.info("getting renaming from web")
     try:
-        response = requests.get(RENAMING_URL, headers={'User-Agent': 'Mozilla/5.0', 'X-Master-Key': MASTER_KEY}, verify=False, timeout=10)
+        response = requests.get(RENAMING_URL, headers={'User-Agent': 'Mozilla/5.0', 'X-Master-Key': MASTER_KEY}, timeout=10)
         renaming_data = response.json()["record"]
     except Exception as e:
         logger.error(e)
