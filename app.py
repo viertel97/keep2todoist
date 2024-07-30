@@ -40,7 +40,7 @@ def transfer_list(keep_list_names: [], todoist_project: str, check_categories: b
     total_items_transferred = 0
     deleted_duplicates = 0
     keep.sync()
-    for keep_list in keep.find(func=lambda x: x.title in keep_list_names):
+    for keep_list in keep.find(func=lambda x: x.title.lower() in [name.lower() for name in keep_list_names]):
         logger.info(f"found list '{keep_list.title}' with {len(keep_list.items)} items and ID {keep_list.id}")
         if len(keep_list.items) == 0:
             logger.info(f"Nothing to transfer for '{keep_list.title}' (ID {keep_list.id})")
