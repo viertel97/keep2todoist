@@ -80,7 +80,7 @@ def transfer_list(keep_list_names: [], todoist_project: str, check_categories: b
             else:
                 logger.info(f"added '{item_text}' to '{todoist_project}'")
             item.delete()
-        keep_list.delete()
+        # keep_list.delete()
     keep.sync()
     logger.info(
         f"Added {total_items_transferred} items to '{todoist_project}' from {keep_list_names} - deleted {deleted_duplicates} duplicates")
