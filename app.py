@@ -60,7 +60,7 @@ def keep_to_tandoor(
 			total_items_transferred += 1
 			logger.info(f"added '{item_text}' to Tandoor'")
 			item.delete()
-		keep_list.delete()
+	# keep_list.delete()
 	return 0, total_items_transferred
 
 
@@ -111,7 +111,7 @@ def keep_to_todoist(
 			else:
 				logger.info(f"added '{item_text}' to '{todoist_project}'")
 			item.delete()
-		keep_list.delete()
+	# keep_list.delete()
 	return deleted_duplicates, total_items_transferred
 
 
