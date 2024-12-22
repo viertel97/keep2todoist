@@ -187,8 +187,19 @@ def move_item_to_section(task_id, section_id):
 	).json()
 
 
+def transfer_todoist_list(todoist_project):
+	project_id, tasks = get_todoist_project_id(todoist_project)
+	logger.info(f"transferring {len(tasks)} items to {todoist_project}")
+	for task in tasks:
+		add_to_shopping_list(task.content)
+		logger.info(f"added '{task.content}' to Tandoor")
+		API.delete_task(task.id)
+
+		
 def update():
 	try:
+		logger.info("Starting update")
+		transfer_todoist_list("Einkaufsliste")
 		transfer_list(
 			["Einkaufsliste", "Einkaufszettel"],
 			"Einkaufsliste",
@@ -197,6 +208,7 @@ def update():
 		)
 		transfer_list(["To-Do", "ToDo-Liste", "To-Do-Liste"], "Inbox", use_tandoor=False)
 		transfer_todoist_non_section_list()
+		logger.info("Finished update")
 	except Exception as e:
 		logger.error(e)
 
