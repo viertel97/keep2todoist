@@ -1,5 +1,6 @@
 import time
 import uuid
+from itertools import chain
 
 import gkeepapi
 import requests
@@ -7,8 +8,6 @@ import schedule
 from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
 from todoist_api_python.api import TodoistAPI
-from todoist_api_python.endpoints import get_sync_url
-from todoist_api_python.headers import create_headers
 
 from helper.tandoor_helper import add_to_shopping_list
 from helper.todoist_helper import get_section, rename_item
@@ -25,19 +24,23 @@ GOOGLE_E_MAIL, GOOGLE_PASSWORD, MASTER_TOKEN, SECOND_MASTER_TOKEN, DEVICE_ID, TO
 		"todoist/token",
 	]
 )
-HEADERS = create_headers(TODOIST_TOKEN)
 
 API = TodoistAPI(TODOIST_TOKEN)
 
-TODOIST_PROJECTS = API.get_projects()
+def get_from_iterable(iterable):
+	return list(chain.from_iterable(iterable))
+
+TODOIST_PROJECTS = get_from_iterable(API.get_projects())
 TODOIST_PROJECT_NAMES = ["Einkaufsliste", "Inbox"]
 FILTERED_TODOIST_PROJECTS = [project for project in TODOIST_PROJECTS if project.name in TODOIST_PROJECT_NAMES]
+
+
 
 
 def get_todoist_project_id(name):
 	for project in FILTERED_TODOIST_PROJECTS:
 		if project.name == name:
-			tasks = API.get_tasks(project_id=project.id)
+			tasks = get_from_iterable(API.get_tasks(project_id=project.id))
 			return project.id, tasks
 	return None
 
@@ -151,8 +154,8 @@ def transfer_list(
 	)
 
 
-def get_items_without_section(project_id="2247224944"):
-	items = API.get_tasks(project_id=project_id)
+def get_items_without_section(project_id="6Crcr3mc5GhGWMG9"):
+	items = get_from_iterable(API.get_tasks(project_id=project_id))
 	return [item for item in items if not item.section_id]
 
 
@@ -166,31 +169,14 @@ def transfer_todoist_non_section_list():
 		except Exception as e:
 			logger.error(f"error getting section for item '{item.content}': {e}")
 			continue
-		response = move_item_to_section(item.id, section_id)
-		if list(response["sync_status"].values())[0] == "ok":
+		response = API.move_task(item.id, section_id)
+		if response:
 			logger.info(f"moved '{item.content}' to section '{section_name}'")
 		else:
 			logger.error(f"error moving '{item.content}' to section '{section_name}': {response}")
 	logger.info("Moved {} items to correct categories".format(len(items_without_section)))
 
 
-def move_item_to_section(task_id, section_id):
-	return requests.post(
-		get_sync_url("sync"),
-		headers=HEADERS,
-		json={
-			"commands": [
-				{
-					"type": "item_move",
-					"uuid": str(uuid.uuid4()),
-					"args": {
-						"id": task_id,
-						"section_id": section_id,
-					},
-				}
-			]
-		},
-	).json()
 
 
 def transfer_todoist_list(todoist_project):
