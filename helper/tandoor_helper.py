@@ -9,9 +9,9 @@ TANDOOR_API_KEY = get_secrets(["tandoor/api_key"])
 
 BASE_URL = "https://recipes.viertel-it.de/api"
 HEADERS = {
-			"Content-Type": "application/json",
-			"Authorization": f"Bearer {TANDOOR_API_KEY}",
-		}
+	"Content-Type": "application/json",
+	"Authorization": f"Bearer {TANDOOR_API_KEY}",
+}
 
 def add_to_shopping_list(item):
 	create_food_response = requests.post(
