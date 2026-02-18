@@ -8,17 +8,23 @@ TANDOOR_API_KEY = get_secrets(["tandoor/api_key"])
 
 
 BASE_URL = "https://recipes.viertel-it.de/api"
-
-
-def add_to_shopping_list(item):
-	response = requests.post(
-		BASE_URL + "/shopping-list-entry/",
-		headers={
+HEADERS = {
 			"Content-Type": "application/json",
 			"Authorization": f"Bearer {TANDOOR_API_KEY}",
-		},
-		json={"food": {"name": item}, "amount": 0},
+		}
+
+def add_to_shopping_list(item):
+	create_food_response = requests.post(
+		BASE_URL + "/api/food/",
+		headers=HEADERS,
+		json={"name": item},
 	)
-	if response.status_code != 201:
-		logger.error(response.content)
+
+	create_shopping_list_entry_response = requests.post(
+		BASE_URL + "/shopping-list-entry/",
+		headers=HEADERS,
+		json={"food": {"name": item}, "amount": 1},
+	)
+	if create_shopping_list_entry_response.status_code != 201:
+		logger.error(create_shopping_list_entry_response.content)
 		raise Exception(f"Error adding item '{item}' to shopping list")
