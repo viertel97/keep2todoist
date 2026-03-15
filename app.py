@@ -65,6 +65,7 @@ def keep_to_tandoor(
 			total_items_transferred += 1
 			logger.info(f"added '{item_text}' to Tandoor'")
 			item.delete()
+			google_keep_instance.sync()
 	# keep_list.delete()
 	return 0, total_items_transferred
 
@@ -94,6 +95,7 @@ def keep_to_todoist(
 				deleted_duplicates += 1
 				logger.info(f"item '{item_text}' already exists in '{todoist_project}' and will be deleted")
 				item.delete()
+				google_keep_instance.sync()
 				continue
 			else:
 				if check_categories:
@@ -112,6 +114,7 @@ def keep_to_todoist(
 				else:
 					API.add_task(content=item_text, due_lang="en")
 				total_items_transferred += 1
+				google_keep_instance.sync()
 			if check_categories and section_id:
 				logger.info(f"added '{item_text}' to '{todoist_project}' and section '{section_name}'")
 			else:
@@ -148,7 +151,6 @@ def transfer_list(
 			keep_list_names,
 			google_keep_instance,
 		)
-	google_keep_instance.sync()
 	logger.info(
 		f"Added {total_items_transferred} items to '{todoist_project}' from {keep_list_names} - deleted {deleted_duplicates} duplicates"
 	)
