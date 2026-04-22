@@ -10,7 +10,7 @@ from quarter_lib.logging import setup_logging
 from todoist_api_python.api import TodoistAPI
 
 from helper.tandoor_helper import add_to_shopping_list
-from helper.todoist_helper import get_section, rename_item
+from helper.todoist_helper import clean_voice_artifacts, get_section, rename_item
 
 logger = setup_logging(__file__)
 
@@ -56,11 +56,12 @@ def keep_to_tandoor(
 			logger.info(f"Nothing to transfer for '{keep_list.title}' (ID {keep_list.id})")
 			continue
 		for item in keep_list.items:
+			raw_text = clean_voice_artifacts(item.text)
 			try:
-				item_text = rename_item(item.text)
+				item_text = rename_item(raw_text)
 			except Exception as e:
-				logger.error(f"error renaming item '{item.text}': {e}")
-				item_text = item.text
+				logger.error(f"error renaming item '{raw_text}': {e}")
+				item_text = raw_text
 			add_to_shopping_list(item_text)
 			total_items_transferred += 1
 			logger.info(f"added '{item_text}' to Tandoor'")
@@ -85,11 +86,12 @@ def keep_to_todoist(
 			continue
 		todoist_project_id, project_tasks = get_todoist_project_id(todoist_project)
 		for item in keep_list.items:
+			raw_text = clean_voice_artifacts(item.text)
 			try:
-				item_text = rename_item(item.text)
+				item_text = rename_item(raw_text)
 			except Exception as e:
-				logger.error(f"error renaming item '{item.text}': {e}")
-				item_text = item.text
+				logger.error(f"error renaming item '{raw_text}': {e}")
+				item_text = raw_text
 			project_task_names = [task.content for task in project_tasks]
 			if item_text in project_task_names:
 				deleted_duplicates += 1

@@ -1,4 +1,5 @@
 import os
+import re
 
 import requests
 from quarter_lib.akeyless import get_secrets
@@ -54,6 +55,29 @@ def get_renaming_from_web():
 	except Exception as e:
 		logger.error(e)
 	return renaming_data
+
+
+VOICE_ARTIFACT_PATTERNS = [
+	r"\bauf\s+(die|meine|unsere|den|das|dem|der)(\s+(einkaufsliste|einkaufszettel|liste|todo[- ]?liste|to[- ]?do[- ]?liste))?\s*$",
+	r"\bin\s+(die|meine|unsere|den|das|dem|der)(\s+(einkaufsliste|einkaufszettel|liste|todo[- ]?liste|to[- ]?do[- ]?liste))?\s*$",
+	r"\bzu\s+(der|meiner|meinem|dem|den)(\s+(einkaufsliste|einkaufszettel|liste|todo[- ]?liste|to[- ]?do[- ]?liste))?\s*$",
+	r"\bfür\s+(die|meine|unsere|den|das)(\s+(einkaufsliste|einkaufszettel|liste|todo[- ]?liste|to[- ]?do[- ]?liste))?\s*$",
+	r"\ban\s+(die|meine|den|das)(\s+(einkaufsliste|einkaufszettel|liste|todo[- ]?liste|to[- ]?do[- ]?liste))?\s*$",
+	r"\b(auf|in|zu|für|an)\s*$",
+]
+
+VOICE_ARTIFACT_REGEX = re.compile("|".join(VOICE_ARTIFACT_PATTERNS), re.IGNORECASE)
+
+
+def clean_voice_artifacts(text):
+	if not text:
+		return text
+	cleaned = VOICE_ARTIFACT_REGEX.sub("", text).strip()
+	if not cleaned:
+		return text
+	if cleaned != text:
+		logger.info(f"cleaned voice artifact: '{text}' -> '{cleaned}'")
+	return cleaned
 
 
 def rename_item(text):
