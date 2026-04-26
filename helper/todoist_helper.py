@@ -58,11 +58,11 @@ def get_renaming_from_web():
 
 
 VOICE_ARTIFACT_PATTERNS = [
-	r"\bauf\s+(die|meine|unsere|den|das|dem|der)(\s+(einkaufsliste|einkaufszettel|liste|todo[- ]?liste|to[- ]?do[- ]?liste))?\s*$",
-	r"\bin\s+(die|meine|unsere|den|das|dem|der)(\s+(einkaufsliste|einkaufszettel|liste|todo[- ]?liste|to[- ]?do[- ]?liste))?\s*$",
-	r"\bzu\s+(der|meiner|meinem|dem|den)(\s+(einkaufsliste|einkaufszettel|liste|todo[- ]?liste|to[- ]?do[- ]?liste))?\s*$",
-	r"\bfür\s+(die|meine|unsere|den|das)(\s+(einkaufsliste|einkaufszettel|liste|todo[- ]?liste|to[- ]?do[- ]?liste))?\s*$",
-	r"\ban\s+(die|meine|den|das)(\s+(einkaufsliste|einkaufszettel|liste|todo[- ]?liste|to[- ]?do[- ]?liste))?\s*$",
+	r"\bauf\s+(die|meine|unsere|den|das|dem|der)(\s+(einkaufsliste|einkaufszettel|liste|todo[- ]?liste|to[- ]?do[- ]?liste|to[- ]?do[-]?))?\s*$",
+	r"\bin\s+(die|meine|unsere|den|das|dem|der)(\s+(einkaufsliste|einkaufszettel|liste|todo[- ]?liste|to[- ]?do[- ]?liste|to[- ]?do[-]?))?\s*$",
+	r"\bzu\s+(der|meiner|meinem|dem|den)(\s+(einkaufsliste|einkaufszettel|liste|todo[- ]?liste|to[- ]?do[- ]?liste|to[- ]?do[-]?))?\s*$",
+	r"\bfür\s+(die|meine|unsere|den|das)(\s+(einkaufsliste|einkaufszettel|liste|todo[- ]?liste|to[- ]?do[- ]?liste|to[- ]?do[-]?))?\s*$",
+	r"\ban\s+(die|meine|den|das)(\s+(einkaufsliste|einkaufszettel|liste|todo[- ]?liste|to[- ]?do[- ]?liste|to[- ]?do[-]?))?\s*$",
 	r"\b(auf|in|zu|für|an)\s*$",
 ]
 
